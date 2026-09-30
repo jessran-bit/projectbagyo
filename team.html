@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operation Bagyo - Team Mission</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .team-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--navy-mid);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .team-id-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .team-letter-sm {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(0,180,168,0.2);
+      border: 1px solid rgba(0,180,168,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 900; color: var(--teal);
+    }
+    .inline-timer {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--teal);
+      background: rgba(0,180,168,0.1);
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+    .inline-timer.warn { color: var(--amber); background: rgba(245,158,11,0.1); }
+    .inline-timer.danger { color: var(--red); background: rgba(239,68,68,0.1); animation: pulse 1s infinite; }
+    .round-section { display: none; }
+    .round-section.active { display: block; }
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--amber);
+    }
+    .wbs-tile-toggle {
+      background: var(--navy-light);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 6px;
+    }
+    .wbs-tile-toggle:hover { border-color: var(--teal); }
+    .wbs-toggle-state {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .toggle-btn {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .toggle-valid { border-color: var(--green); color: var(--green); background: transparent; }
+    .toggle-valid.active { background: var(--green); color: var(--navy); }
+    .toggle-trash { border-color: var(--red); color: var(--red); background: transparent; }
+    .toggle-trash.active { background: var(--red); color: var(--white); }
+    .completion-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--green);
+      background: rgba(16,185,129,0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-left: 8px;
+    }
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .num-teal { background: rgba(0,180,168,0.2); color: var(--teal); }
+    .num-amber { background: rgba(245,158,11,0.2); color: var(--amber); }
+    .num-purple { background: rgba(124,58,237,0.2); color: var(--purple-light); }
+    .num-green { background: rgba(16,185,129,0.2); color: var(--green); }
+  </style>
+</head>
+<body>
+
+<!-- Sticky Header -->
+<div class="team-header">
+  <div class="team-id-badge">
+    <div class="team-letter-sm" id="headerTeamLetter">?</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--gray-400);letter-spacing:2px;">MISSION TEAM</div>
+      <div style="font-weight:700;font-size:0.9rem;" id="headerTeamName">Loading...</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="score-pill">Score: <span id="headerScore">0</span>/21</span>
+    <div class="sync-status">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncLabel">Offline</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- INTRO SCREEN -->
+  <div id="screen-intro">
+    <div style="text-align:center;padding:30px 0;">
+      <div style="font-size:3rem;margin-bottom:12px;">🛰️</div>
+      <div style="font-size:0.75rem;color:var(--gray-400);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;">Operation Bagyo</div>
+      <h1 style="font-size:2rem;font-weight:900;margin-bottom:6px;">Team <span id="introTeamLetter" class="text-teal">?</span></h1>
+      <div style="font-size:1rem;color:var(--amber);margin-bottom:16px;" id="introTeamName"></div>
+      <div style="max-width:480px;margin:0 auto;font-size:0.9rem;color:var(--gray-400);line-height:1.7;">
+        Your team has been assigned a satellite mission by the Philippine Space Agency. You have 20 minutes to plan it, fund it, and handle the unexpected.<br><br>
+        <strong style="color:var(--white);">One device per team is enough.</strong> Discuss together and enter answers as a group.
+      </div>
+      <div class="mt-24">
+        <button class="btn btn-teal btn-lg" onclick="startGame()">
+          Begin Mission &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUND 1: PROJECT CHARTER -->
+  <div id="screen-round1" class="round-section">
+    <div class="steps-bar">
+      <div class="step-dot active" id="s1"></div>
+      <div class="step-dot" id="s2a"></div>
+      <div class="step-dot" id="s2b"></div>
+      <div class="step-dot" id="s3"></div>
+      <div class="step-dot" id="sfin"></div>
+    </div>
+    <div class="step-label">Round 1 of 3</div>
+    <div class="step-title">Project Charter <span class="text-gray">&amp; Scope</span></div>
+
+    <div class="alert alert-info mt-12">
+      <span>📋</span>
+      <span>Read your Scenario Card carefully. All answers must come from the card plus your team's decisions.</span>
+    </div>
+
+    <!-- Scenario display -->
+    <div class="scenario-box" id="scenarioBox"></div>
+
+    <!-- Section 1A: Charter -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-teal"><span class="section-number num-teal">1A</span></div>
+        <div>
+          <div class="card-title">Project Charter</div>
+          <div class="card-subtitle">Fill in the mission essentials from your Scenario Card</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>WHAT - Mission Objective (what will the satellite do?)</label>
+        <textarea id="charter_what" placeholder="e.g. Deploy a climate monitoring satellite to track typhoon formation..." rows="2"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>WHEN - Target Timeline</label>
+        <input type="text" id="charter_when" placeholder="e.g. 18 months from contract signing">
+      </div>
+
+      <div class="form-group">
+        <label>HOW MUCH - Approved Budget (PHP)</label>
+        <input type="text" id="charter_budget" placeholder="e.g. PHP 2.8 Billion">
+      </div>
+
+      <div class="form-group">
+        <label>PROJECT MANAGER - Who on your team leads this mission</label>
+        <input type="text" id="charter_pm" placeholder="Team member's name">
+      </div>
+
+      <div class="form-group">
+        <label>SPONSOR - Who authorized this mission (from Scenario Card)</label>
+        <input type="text" id="charter_sponsor" placeholder="Government agency from your scenario">
+      </div>
+    </div>
+
+    <!-- Section 1B: Priority Matrix -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-amber"><span class="section-number num-amber">1B</span></div>
+        <div>
+          <div class="card-title">Priority Matrix</div>
+          <div class="card-subtitle">For each constraint, mark: C = Constrain &bull; A = Accept &bull; E = Enhance</div>
+        </div>
+      </div>
+
+      <div class="priority-matrix">
+        <div class="matrix-header"></div>
+        <div class="matrix-header" style="color:var(--red);">C<br><span style="font-size:0.6rem;color:var(--gray-400);">Constrain</span></div>
+        <div class="matrix-header" style="color:var(--amber);">A<br><span style="font-size:0.6rem;color:var(--gray-400);">Accept</span></div>
+        <div class="matrix-header" style="color:var(--green);">E<br><span style="font-size:0.6rem;color:var(--gray-400);">Enhance</span></div>
+
+        <div class="matrix-row-label">Cost</div>
+        <div class="matrix-cell" data-row="cost" data-val="C" onclick="selectMatrix('cost','C')"></div>
+        <div class="matrix-cell" data-row="cost" data-val="A" onclick="selectMatrix('cost','A')"></div>
+        <div class="matrix-cell" data-row="cost" data-val="E" onclick="selectMatrix('cost','E')"></div>
+
+        <div class="matrix-row-label">Time</div>
+        <div class="matrix-cell" data-row="time" data-val="C" onclick="selectMatrix('time','C')"></div>
+        <div class="matrix-cell" data-row="time" data-val="A" onclick="selectMatrix('time','A')"></div>
+        <div class="matrix-cell" data-row="time" data-val="E" onclick="selectMatrix('time','E')"></div>
+
+        <div class="matrix-row-label">Scope</div>
+        <div class="matrix-cell" data-row="scope" data-val="C" onclick="selectMatrix('scope','C')"></div>
+        <div class="matrix-cell" data-row="scope" data-val="A" onclick="selectMatrix('scope','A')"></div>
+        <div class="matrix-cell" data-row="scope" data-val="E" onclick="selectMatrix('scope','E')"></div>
+      </div>
+
+      <div class="matrix-legend mt-12">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span style="color:var(--gray-400);">Constrain = must stay fixed</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div><span style="color:var(--gray-400);">Accept = flexible, can change</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span style="color:var(--gray-400);">Enhance = push to make better</span></div>
+      </div>
+    </div>
+
+    <!-- Section 1C: Feasibility -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-green"><span class="section-number num-green">1C</span></div>
+        <div>
+          <div class="card-title">Feasibility Check</div>
+          <div class="card-subtitle">Check all that apply to your mission (at least 2)</div>
+        </div>
+      </div>
+
+      <div class="feasibility-checks">
+        <div class="check-item" onclick="toggleFeasibility('technical')" id="feas-technical">
+          <div class="check-box" id="cb-technical"></div>
+          <div class="check-text"><strong>Technical</strong><br>The technology exists or can be developed</div>
+        </div>
+        <div class="check-item" onclick="toggleFeasibility('financial')" id="feas-financial">
+          <div class="check-box" id="cb-financial"></div>
+          <div class="check-text"><strong>Financial</strong><br>Budget is sufficient for the mission</div>
+        </div>
+        <div class="check-item" onclick="toggleFeasibility('schedule')" id="feas-schedule">
+          <div class="check-box" id="cb-schedule"></div>
+          <div class="check-text"><strong>Schedule</strong><br>Timeline is achievable given resources</div>
+        </div>
+        <div class="check-item" onclick="toggleFeasibility('political')" id="feas-political">
+          <div class="check-box" id="cb-political"></div>
+          <div class="check-text"><strong>Political/Legal</strong><br>Regulatory and stakeholder support exists</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-teal btn-lg" style="flex:1" onclick="goToRound('2a')">
+        Proceed to WBS Sort &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ROUND 2A: WBS SORT -->
+  <div id="screen-round2a" class="round-section">
+    <div class="steps-bar">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-label">Round 2A of 3</div>
+    <div class="step-title">WBS Tile Sort</div>
+
+    <div class="alert alert-warning mt-12">
+      <span>🃏</span>
+      <div>Look at all 12 WBS tiles on your table. <strong>Decide as a team</strong> which are real work packages for a satellite mission, and which are not.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-teal">🗂️</div>
+        <div>
+          <div class="card-title">Sort All 12 Tiles</div>
+          <div class="card-subtitle">Click each tile to mark it Valid or Discard. Discuss before deciding.</div>
+        </div>
+      </div>
+
+      <div id="tileList"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="goToRound('1')">&#8592; Back</button>
+      <button class="btn btn-teal" style="flex:1" onclick="goToRound('2b')">
+        Set Budget &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ROUND 2B: BUDGET -->
+  <div id="screen-round2b" class="round-section">
+    <div class="steps-bar">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-label">Round 2B of 3</div>
+    <div class="step-title">Mission Budget</div>
+
+    <div class="alert alert-info mt-12">
+      <span>💰</span>
+      <div>Enter your estimated cost for each tile you marked as <strong>Valid</strong>. Stay within your mission's approved budget. Each tile shows a cost range - you decide the exact amount.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-amber">📊</div>
+        <div>
+          <div class="card-title">Budget Estimation</div>
+          <div class="card-subtitle">Enter cost in Millions PHP for each valid work package</div>
+        </div>
+      </div>
+
+      <table class="budget-table" id="budgetTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Work Package</th>
+            <th>Cost Range</th>
+            <th>Your Estimate (PHP M)</th>
+          </tr>
+        </thead>
+        <tbody id="budgetRows"></tbody>
+        <tfoot>
+          <tr class="budget-total-row">
+            <td colspan="3" style="text-align:right;padding-right:16px;">TOTAL ESTIMATED BUDGET</td>
+            <td><strong id="budgetTotal" style="font-size:1.1rem;">0</strong><span style="font-size:0.7rem;color:var(--gray-400);"> M PHP</span></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="mt-16" id="budgetWarning" style="display:none;"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="goToRound('2a')">&#8592; Back</button>
+      <button class="btn btn-teal" style="flex:1" onclick="goToRound('3')">
+        Handle Anomaly &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ROUND 3: ANOMALY -->
+  <div id="screen-round3" class="round-section">
+    <div class="steps-bar">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-label">Round 3 of 3</div>
+    <div class="step-title">Mission Anomaly <span class="text-gray">Response</span></div>
+
+    <div class="alert alert-warning mt-12">
+      <span>⚠️</span>
+      <div>Something unexpected has happened. Read the situation, discuss with your team, then choose your response. <strong>You must cite the PHP cost impact and name the constraint affected.</strong></div>
+    </div>
+
+    <div id="anomalyDisplay"></div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-purple">✍️</div>
+        <div>
+          <div class="card-title">Your Justification</div>
+          <div class="card-subtitle">Required: mention the PHP amount and the constraint (Cost, Time, or Scope)</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Why did your team choose this response?</label>
+        <textarea id="anomalyJustification" placeholder="e.g. We chose NEGOTIATE because it saves PHP 80M compared to ACCEPT and only delays by 2 months, keeping us within our cost constraint..." rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="goToRound('2b')">&#8592; Back</button>
+      <button class="btn btn-amber btn-lg" style="flex:1" onclick="submitFinal()">
+        Submit Mission &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- FINAL SCORE SCREEN -->
+  <div id="screen-final" class="round-section">
+    <div style="text-align:center;padding:20px 0 10px;">
+      <div style="font-size:3rem;margin-bottom:10px;">🏆</div>
+      <div style="font-size:0.75rem;color:var(--gray-400);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Mission Complete</div>
+      <h2 style="font-size:2rem;font-weight:900;">Final Score</h2>
+    </div>
+
+    <div class="card">
+      <div class="score-section">
+        <div class="score-row">
+          <div class="score-label">Round 1A - Charter (3 fields)</div>
+          <div class="score-value text-teal" id="s_charter">0/3</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Round 1B - Priority Matrix</div>
+          <div class="score-value text-teal" id="s_priority">0/2</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Round 1C - Feasibility Check</div>
+          <div class="score-value text-teal" id="s_feasibility">0/2</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Round 2A - WBS Sort (8 valid / 4 discard)</div>
+          <div class="score-value text-amber" id="s_wbs">0/5</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Round 2B - Budget Estimation</div>
+          <div class="score-value text-amber" id="s_budget">0/5</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Round 3 - Anomaly Response</div>
+          <div class="score-value text-purple" id="s_anomaly">0/4</div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-row" style="padding:12px 0;">
+          <div style="font-size:1.1rem;font-weight:800;">TOTAL SCORE</div>
+          <div>
+            <span class="score-total" id="s_total">0</span>
+            <span class="score-max">/21</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-16">
+      <div style="font-size:0.8rem;color:var(--gray-400);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Your Answers</div>
+      <div id="reviewSummary"></div>
+    </div>
+
+    <div class="alert alert-info mt-12">
+      <span>📡</span>
+      <div>Your score has been sent to Mission Control. Wait for the instructor to reveal the answer key and class results.</div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<script src="game-data.js"></script>
+<script>
+// ==================== STATE ====================
+let teamId = '';
+let scenario = null;
+let gameState = {
+  tilePlacements: {}, // id -> 'valid' | 'trash'
+  budgetValues: {},   // id -> number
+  matrixSelections: { cost: '', time: '', scope: '' },
+  feasibility: [],
+  anomalyChoice: '',  // 'accept'|'negotiate'|'reject'
+  anomalyId: 1,
+  scores: {}
+};
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  teamId = (params.get('team') || 'A').toUpperCase();
+  if (!TEAMS.includes(teamId)) teamId = 'A';
+
+  scenario = GAME_DATA.scenarios[teamId];
+  document.title = `Operation Bagyo - Team ${teamId}`;
+
+  // Assign anomaly card based on team
+  const anomalyIdx = { A:1, B:3, C:5, D:7, E:9, F:11 };
+  gameState.anomalyId = anomalyIdx[teamId] || 1;
+
+  // Header
+  document.getElementById('headerTeamLetter').textContent = teamId;
+  document.getElementById('headerTeamName').textContent = TEAM_NAMES[teamId];
+  document.getElementById('introTeamLetter').textContent = teamId;
+  document.getElementById('introTeamName').textContent = TEAM_NAMES[teamId];
+
+  buildScenarioBox();
+  buildTileList();
+  buildBudgetTable();
+  buildAnomalyDisplay();
+  initSync();
+
+  // Restore saved state
+  loadState();
+});
+
+function buildScenarioBox() {
+  const s = scenario;
+  document.getElementById('scenarioBox').innerHTML = `
+    <div class="scenario-name">${s.name}</div>
+    <div class="scenario-subtitle">${s.subtitle}</div>
+    <div class="scenario-desc">${s.description}</div>
+    <div class="scenario-stats">
+      <div class="stat-item">
+        <div class="stat-label">Budget</div>
+        <div class="stat-value">${s.budget}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Timeline</div>
+        <div class="stat-value">${s.timeline}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Sponsor</div>
+        <div class="stat-value" style="font-size:0.75rem;">${s.sponsor}</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:0.78rem;color:var(--teal);background:rgba(0,180,168,0.08);border-radius:6px;padding:8px 12px;">
+      🎯 <strong>Priority Note:</strong> ${s.priorityNote}
+    </div>
+  `;
+}
+
+function buildTileList() {
+  const container = document.getElementById('tileList');
+  GAME_DATA.wbsTiles.forEach(tile => {
+    const div = document.createElement('div');
+    div.className = 'wbs-tile-toggle';
+    div.id = `tile-${tile.id}`;
+    div.innerHTML = `
+      <div class="tile-num">${tile.id}</div>
+      <div>
+        <div class="tile-name">${tile.name}</div>
+        <div class="tile-cost">${tile.costRange}</div>
+      </div>
+      <div class="wbs-toggle-state">
+        <button class="toggle-btn toggle-valid" id="tv-${tile.id}" onclick="placeTile(${tile.id},'valid')">VALID</button>
+        <button class="toggle-btn toggle-trash" id="tt-${tile.id}" onclick="placeTile(${tile.id},'trash')">DISCARD</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function buildBudgetTable() {
+  const tbody = document.getElementById('budgetRows');
+  tbody.innerHTML = '';
+  // Show only tiles marked valid, or all if none marked yet
+  const validTiles = GAME_DATA.wbsTiles.filter(t => gameState.tilePlacements[t.id] === 'valid');
+  const tiles = validTiles.length > 0 ? validTiles : GAME_DATA.wbsTiles.filter(t => t.valid);
+
+  tiles.forEach(tile => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--gray-400)">${tile.id}</td>
+      <td style="font-weight:600">${tile.name}</td>
+      <td style="color:var(--amber);font-size:0.8rem;">${tile.costRange}</td>
+      <td>
+        <input type="number" id="budget-${tile.id}" placeholder="0" min="0" max="9999"
+               value="${gameState.budgetValues[tile.id] || ''}"
+               oninput="updateBudgetTotal()"
+               style="width:120px">
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateBudgetTotal();
+}
+
+function buildAnomalyDisplay() {
+  const anomaly = getAnomalyCard(gameState.anomalyId);
+  document.getElementById('anomalyDisplay').innerHTML = `
+    <div class="anomaly-card">
+      <div class="anomaly-title">⚠️ ${anomaly.title}</div>
+      <div class="anomaly-situation">${anomaly.situation}</div>
+      <div class="anomaly-cost">💰 Cost Impact: ${anomaly.costImpact}</div>
+      <div class="response-options">
+        <div class="response-option" id="opt-accept" onclick="chooseAnomaly('accept')">
+          <span class="option-tag tag-accept">ACCEPT</span>
+          <div class="option-text">${anomaly.options.accept}</div>
+        </div>
+        <div class="response-option" id="opt-negotiate" onclick="chooseAnomaly('negotiate')">
+          <span class="option-tag tag-negotiate">NEGOTIATE</span>
+          <div class="option-text">${anomaly.options.negotiate}</div>
+        </div>
+        <div class="response-option" id="opt-reject" onclick="chooseAnomaly('reject')">
+          <span class="option-tag tag-reject">REJECT</span>
+          <div class="option-text">${anomaly.options.reject}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  if (gameState.anomalyChoice) chooseAnomaly(gameState.anomalyChoice, false);
+}
+
+// ==================== GAME ACTIONS ====================
+function startGame() {
+  document.getElementById('screen-intro').style.display = 'none';
+  showRound('1');
+  broadcastState('started');
+}
+
+function showRound(id) {
+  document.querySelectorAll('.round-section').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`screen-round${id}`);
+  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+  broadcastState('round', id);
+}
+
+function goToRound(id) {
+  if (id === '2b') buildBudgetTable(); // rebuild with current valid tiles
+  showRound(id);
+  saveState();
+}
+
+function selectMatrix(row, val) {
+  gameState.matrixSelections[row] = val;
+  document.querySelectorAll(`.matrix-cell[data-row="${row}"]`).forEach(cell => {
+    cell.className = 'matrix-cell';
+    const cellVal = cell.dataset.val;
+    if (cellVal === val) cell.classList.add(`selected-${val}`);
+    cell.textContent = '';
+  });
+  // Mark selected cell
+  const selected = document.querySelector(`.matrix-cell[data-row="${row}"][data-val="${val}"]`);
+  if (selected) selected.textContent = val;
+  saveState();
+}
+
+function toggleFeasibility(key) {
+  const el = document.getElementById(`feas-${key}`);
+  const cb = document.getElementById(`cb-${key}`);
+  const idx = gameState.feasibility.indexOf(key);
+  if (idx === -1) {
+    gameState.feasibility.push(key);
+    el.classList.add('checked');
+    cb.textContent = '✓';
+  } else {
+    gameState.feasibility.splice(idx, 1);
+    el.classList.remove('checked');
+    cb.textContent = '';
+  }
+  saveState();
+}
+
+function placeTile(id, placement) {
+  gameState.tilePlacements[id] = placement;
+  // Update buttons
+  const validBtn = document.getElementById(`tv-${id}`);
+  const trashBtn = document.getElementById(`tt-${id}`);
+  if (validBtn) {
+    validBtn.classList.toggle('active', placement === 'valid');
+    trashBtn.classList.toggle('active', placement === 'trash');
+  }
+  updateTileRow(id);
+  saveState();
+}
+
+function updateTileRow(id) {
+  const tile = document.getElementById(`tile-${id}`);
+  if (!tile) return;
+  const p = gameState.tilePlacements[id];
+  tile.style.borderColor = p === 'valid' ? 'var(--green)' : p === 'trash' ? 'var(--red)' : '';
+  tile.style.background = p === 'valid' ? 'rgba(16,185,129,0.06)' : p === 'trash' ? 'rgba(239,68,68,0.06)' : '';
+}
+
+function chooseAnomaly(choice, save = true) {
+  gameState.anomalyChoice = choice;
+  ['accept','negotiate','reject'].forEach(c => {
+    const el = document.getElementById(`opt-${c}`);
+    if (el) el.className = 'response-option' + (c === choice ? ` selected-${c}` : '');
+  });
+  if (save) saveState();
+}
+
+function updateBudgetTotal() {
+  let total = 0;
+  document.querySelectorAll('[id^="budget-"]').forEach(input => {
+    total += parseFloat(input.value) || 0;
+    const id = parseInt(input.id.split('-')[1]);
+    gameState.budgetValues[id] = parseFloat(input.value) || 0;
+  });
+  document.getElementById('budgetTotal').textContent = total.toLocaleString('en-PH');
+
+  const warn = document.getElementById('budgetWarning');
+  const budgetM = scenario.budgetValue; // already in millions
+  if (total > budgetM * 1.1) {
+    warn.style.display = 'block';
+    warn.innerHTML = `<div class="alert alert-error">⚠️ Your estimate (PHP ${total.toLocaleString()}M) exceeds your approved budget of ${scenario.budget} by more than 10%. Review your figures.</div>`;
+  } else if (total > 0) {
+    warn.style.display = 'block';
+    warn.innerHTML = `<div class="alert alert-success">✓ Total estimate: PHP ${total.toLocaleString()}M — within budget range.</div>`;
+  } else {
+    warn.style.display = 'none';
+  }
+  saveState();
+}
+
+// ==================== SCORING ====================
+function calcScore() {
+  let scores = { charter: 0, priority: 0, feasibility: 0, wbs: 0, budget: 0, anomaly: 0 };
+
+  // Charter (3 pts)
+  if ((document.getElementById('charter_what')?.value || '').trim().length > 5) scores.charter++;
+  if ((document.getElementById('charter_when')?.value || '').trim().length > 2) scores.charter++;
+  if ((document.getElementById('charter_budget')?.value || '').trim().length > 2) scores.charter++;
+
+  // Priority matrix (2 pts)
+  const ms = gameState.matrixSelections;
+  const correctPriority = scenario.priority;
+  const allSet = ms.cost && ms.time && ms.scope;
+  if (allSet) scores.priority++;
+  if (allSet && ms.cost === correctPriority.cost && ms.time === correctPriority.time && ms.scope === correctPriority.scope) scores.priority++;
+
+  // Feasibility (2 pts)
+  if (gameState.feasibility.length >= 2) scores.feasibility++;
+  // Bonus: check consistency with priority (e.g. if cost is constrained, financial should be checked)
+  const consistent = (
+    (correctPriority.cost === 'C' && gameState.feasibility.includes('financial')) ||
+    (correctPriority.time === 'C' && gameState.feasibility.includes('schedule')) ||
+    (correctPriority.scope === 'C' && gameState.feasibility.includes('technical'))
+  );
+  if (gameState.feasibility.length >= 2 && consistent) scores.feasibility++;
+
+  // WBS (5 pts based on correct placements)
+  let correct = 0;
+  GAME_DATA.wbsTiles.forEach(tile => {
+    const placed = gameState.tilePlacements[tile.id];
+    if (tile.valid && placed === 'valid') correct++;
+    if (!tile.valid && placed === 'trash') correct++;
+  });
+  if (correct >= 12) scores.wbs = 5;
+  else if (correct >= 10) scores.wbs = 4;
+  else if (correct >= 8) scores.wbs = 3;
+  else if (correct >= 6) scores.wbs = 2;
+  else if (correct >= 4) scores.wbs = 1;
+
+  // Budget (5 pts)
+  let budgetTotal = 0;
+  Object.values(gameState.budgetValues).forEach(v => budgetTotal += v);
+  const opt = GAME_DATA.budgetOptimal;
+  if (budgetTotal >= opt.min && budgetTotal <= opt.max) scores.budget = 5;
+  else if (budgetTotal >= opt.min * 0.85 && budgetTotal <= opt.max * 1.15) scores.budget = 3;
+  else if (budgetTotal > 0) scores.budget = 1;
+
+  // Anomaly (4 pts)
+  const anomaly = getAnomalyCard(gameState.anomalyId);
+  const choice = gameState.anomalyChoice;
+  const justification = (document.getElementById('anomalyJustification')?.value || '').toLowerCase();
+  const hasPHP = justification.includes('php') || /\d+m/i.test(justification) || /million/i.test(justification);
+  const hasConstraint = ['cost','time','scope','budget','schedule','delay','constrain'].some(w => justification.includes(w));
+
+  if (choice === 'negotiate') {
+    if (hasPHP && hasConstraint) scores.anomaly = 4;
+    else if (hasPHP || hasConstraint) scores.anomaly = 3;
+    else scores.anomaly = 2;
+  } else if (choice === 'accept') {
+    if (hasPHP) scores.anomaly = 2;
+    else if (choice) scores.anomaly = 1;
+  } else if (choice === 'reject') {
+    if (choice) scores.anomaly = 1;
+  }
+
+  scores.total = Object.values(scores).reduce((a, b) => a + b, 0) - scores.total;
+  // recalc without total field
+  const keys = ['charter','priority','feasibility','wbs','budget','anomaly'];
+  scores.total = keys.reduce((acc, k) => acc + scores[k], 0);
+
+  return scores;
+}
+
+function submitFinal() {
+  const scores = calcScore();
+  gameState.scores = scores;
+  saveState();
+  broadcastState('submitted', scores);
+
+  // Show final screen
+  document.querySelectorAll('.round-section').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-final').classList.add('active');
+  window.scrollTo(0, 0);
+
+  // Display scores
+  document.getElementById('s_charter').textContent = `${scores.charter}/3`;
+  document.getElementById('s_priority').textContent = `${scores.priority}/2`;
+  document.getElementById('s_feasibility').textContent = `${scores.feasibility}/2`;
+  document.getElementById('s_wbs').textContent = `${scores.wbs}/5`;
+  document.getElementById('s_budget').textContent = `${scores.budget}/5`;
+  document.getElementById('s_anomaly').textContent = `${scores.anomaly}/4`;
+  document.getElementById('s_total').textContent = scores.total;
+  document.getElementById('headerScore').textContent = scores.total;
+
+  // Review summary
+  const ms = gameState.matrixSelections;
+  document.getElementById('reviewSummary').innerHTML = `
+    <div style="font-size:0.85rem;line-height:2;">
+      <div><strong style="color:var(--teal);">Charter:</strong> ${document.getElementById('charter_what')?.value || '-'}</div>
+      <div><strong style="color:var(--teal);">Priority:</strong> Cost=${ms.cost||'?'} / Time=${ms.time||'?'} / Scope=${ms.scope||'?'}</div>
+      <div><strong style="color:var(--amber);">WBS:</strong> ${Object.values(gameState.tilePlacements).filter(v=>v==='valid').length} tiles marked valid</div>
+      <div><strong style="color:var(--amber);">Budget Total:</strong> PHP ${Object.values(gameState.budgetValues).reduce((a,b)=>a+b,0).toLocaleString()}M</div>
+      <div><strong style="color:var(--purple-light);">Anomaly Choice:</strong> ${(gameState.anomalyChoice||'none').toUpperCase()}</div>
+    </div>
+  `;
+}
+
+// ==================== SYNC ====================
+let channel = null;
+
+function initSync() {
+  try {
+    channel = new BroadcastChannel('bagyo-game');
+    channel.onmessage = (e) => handleSyncMessage(e.data);
+    setSyncStatus('connected', 'Live sync');
+  } catch(err) {
+    setSyncStatus('', 'No sync');
+  }
+}
+
+function broadcastState(event, data) {
+  if (!channel) return;
+  const ms = gameState.matrixSelections;
+  try {
+    channel.postMessage({
+      type: 'team-update',
+      team: teamId,
+      event,
+      data,
+      scores: gameState.scores,
+      progress: getCurrentRound(),
+      timestamp: Date.now()
+    });
+    setSyncStatus('syncing', 'Syncing...');
+    setTimeout(() => setSyncStatus('connected', 'Live sync'), 800);
+  } catch(e) {}
+}
+
+function handleSyncMessage(msg) {
+  if (msg.type === 'instructor-advance') {
+    // Instructor can trigger round advance
+  }
+}
+
+function getCurrentRound() {
+  const active = document.querySelector('.round-section.active');
+  return active ? active.id.replace('screen-round','') : 'intro';
+}
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot' + (state ? ' ' + state : '');
+  lbl.textContent = label;
+}
+
+// ==================== PERSIST ====================
+function saveState() {
+  const key = `bagyo-team-${teamId}`;
+  const data = {
+    tilePlacements: gameState.tilePlacements,
+    budgetValues: gameState.budgetValues,
+    matrixSelections: gameState.matrixSelections,
+    feasibility: gameState.feasibility,
+    anomalyChoice: gameState.anomalyChoice,
+    anomalyId: gameState.anomalyId,
+    scores: gameState.scores,
+    charter_what: document.getElementById('charter_what')?.value || '',
+    charter_when: document.getElementById('charter_when')?.value || '',
+    charter_budget: document.getElementById('charter_budget')?.value || '',
+    charter_pm: document.getElementById('charter_pm')?.value || '',
+    charter_sponsor: document.getElementById('charter_sponsor')?.value || '',
+    anomalyJust: document.getElementById('anomalyJustification')?.value || ''
+  };
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadState() {
+  const key = `bagyo-team-${teamId}`;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.assign(gameState, {
+      tilePlacements: data.tilePlacements || {},
+      budgetValues: data.budgetValues || {},
+      matrixSelections: data.matrixSelections || { cost:'', time:'', scope:'' },
+      feasibility: data.feasibility || [],
+      anomalyChoice: data.anomalyChoice || '',
+      anomalyId: data.anomalyId || gameState.anomalyId,
+      scores: data.scores || {}
+    });
+
+    // Restore text fields
+    if (data.charter_what) document.getElementById('charter_what').value = data.charter_what;
+    if (data.charter_when) document.getElementById('charter_when').value = data.charter_when;
+    if (data.charter_budget) document.getElementById('charter_budget').value = data.charter_budget;
+    if (data.charter_pm) document.getElementById('charter_pm').value = data.charter_pm;
+    if (data.charter_sponsor) document.getElementById('charter_sponsor').value = data.charter_sponsor;
+    if (data.anomalyJust) document.getElementById('anomalyJustification').value = data.anomalyJust;
+
+    // Restore matrix
+    Object.entries(gameState.matrixSelections).forEach(([row, val]) => {
+      if (val) selectMatrix(row, val);
+    });
+
+    // Restore feasibility
+    gameState.feasibility.forEach(key => {
+      const el = document.getElementById(`feas-${key}`);
+      const cb = document.getElementById(`cb-${key}`);
+      if (el) { el.classList.add('checked'); cb.textContent = '✓'; }
+    });
+
+    // Restore tile placements
+    Object.entries(gameState.tilePlacements).forEach(([id, p]) => {
+      placeTile(parseInt(id), p);
+    });
+
+    // Restore anomaly choice
+    if (gameState.anomalyChoice) chooseAnomaly(gameState.anomalyChoice, false);
+
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
