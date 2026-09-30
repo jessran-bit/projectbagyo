@@ -82,6 +82,7 @@ const GAME_DATA = {
     {
       id: 1,
       name: "Payload Integration",
+      description: "Mounting and connecting the satellite's instruments -- cameras, sensors, or scientific equipment -- into the main satellite body so they can function together as a unit.",
       costRange: "PHP 280M - 340M",
       costMin: 280, costMax: 340,
       valid: true,
@@ -94,6 +95,7 @@ const GAME_DATA = {
     {
       id: 2,
       name: "Satellite Assembly",
+      description: "Building the complete physical satellite -- integrating the structure, power systems, propulsion, and all subsystems into the final flight-ready spacecraft.",
       costRange: "PHP 600M - 750M",
       costMin: 600, costMax: 750,
       valid: true,
@@ -106,6 +108,7 @@ const GAME_DATA = {
     {
       id: 3,
       name: "Ground Station Setup",
+      description: "Building and equipping the control facility on the ground that will send commands to the satellite and receive data from it during the mission.",
       costRange: "PHP 150M - 200M",
       costMin: 150, costMax: 200,
       valid: true,
@@ -118,6 +121,7 @@ const GAME_DATA = {
     {
       id: 4,
       name: "Launch Preparation",
+      description: "All the activities needed to get the satellite safely to the launch site -- pre-launch checks, transport, fueling, and integration with the launch vehicle.",
       costRange: "PHP 90M - 130M",
       costMin: 90, costMax: 130,
       valid: true,
@@ -130,6 +134,7 @@ const GAME_DATA = {
     {
       id: 5,
       name: "Software Development",
+      description: "Writing the onboard computer programs that control the satellite's operations -- managing power, pointing the instruments, storing and transmitting data.",
       costRange: "PHP 200M - 270M",
       costMin: 200, costMax: 270,
       valid: true,
@@ -142,6 +147,7 @@ const GAME_DATA = {
     {
       id: 6,
       name: "Testing & Validation",
+      description: "Running all required quality checks -- vibration tests, thermal vacuum tests, communication tests -- to confirm the satellite will survive launch and operate correctly in orbit.",
       costRange: "PHP 120M - 180M",
       costMin: 120, costMax: 180,
       valid: true,
@@ -154,6 +160,7 @@ const GAME_DATA = {
     {
       id: 7,
       name: "Mission Operations",
+      description: "The team, procedures, and systems needed to fly the satellite day-to-day after launch -- monitoring its health, sending commands, and processing the data it sends back.",
       costRange: "PHP 400M - 500M",
       costMin: 400, costMax: 500,
       valid: true,
@@ -166,6 +173,7 @@ const GAME_DATA = {
     {
       id: 8,
       name: "Antenna Installation",
+      description: "Physically installing and precisely aligning the large dish antennas at the ground station that will communicate with the satellite as it passes overhead.",
       costRange: "PHP 60M - 90M",
       costMin: 60, costMax: 90,
       valid: true,
@@ -179,6 +187,7 @@ const GAME_DATA = {
     {
       id: 9,
       name: "Team Lunch Budget",
+      description: "A catering and meal allowance fund for the project team during long work sessions and weekend sprints.",
       costRange: "PHP 150M - 300M",
       costMin: 150, costMax: 300,
       valid: false,
@@ -190,6 +199,7 @@ const GAME_DATA = {
     {
       id: 10,
       name: "Morale & Wellness Program",
+      description: "Team-building retreats, mental health support, gym memberships, and recognition events to keep the project team motivated throughout the mission.",
       costRange: "PHP 200M - 400M",
       costMin: 200, costMax: 400,
       valid: false,
@@ -201,6 +211,7 @@ const GAME_DATA = {
     {
       id: 11,
       name: "Office Renovation",
+      description: "Upgrading the PhilSpace headquarters -- new workstations, modern conference rooms, and improved HVAC systems for the engineering floors.",
       costRange: "PHP 120M - 250M",
       costMin: 120, costMax: 250,
       valid: false,
@@ -212,6 +223,7 @@ const GAME_DATA = {
     {
       id: 12,
       name: "Social Media Campaign",
+      description: "A public communications effort -- videos, posts, and influencer partnerships -- to raise public awareness and excitement about the satellite launch.",
       costRange: "PHP 180M - 350M",
       costMin: 180, costMax: 350,
       valid: false,
